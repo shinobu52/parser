@@ -1,3 +1,5 @@
+/// 位置情報
+/// Loc(4, 6)なら入力文字の5~7文字目の区間を表す
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 struct Loc(usize, usize);
 
@@ -8,6 +10,8 @@ impl Loc {
     }
 }
 
+/// アノテーション
+/// 値に様々なデータを付与する
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 struct Annot<T> {
     value: T,
@@ -38,8 +42,10 @@ enum TokenKind {
     RParen,
 }
 
+// TokenKindにアノテーションを付与したものをTokenとする
 type Token = Annot<TokenKind>;
 
+// ヘルパーメソッドを定義
 impl Token {
     fn number(n: u64, loc: Loc) -> Self {
         Self::new(TokenKind::Number(n), loc)
