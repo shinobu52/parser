@@ -145,3 +145,22 @@ fn consume_byte(input: &[u8], pos: usize, b: u8) -> Result<(u8, usize), LexError
     }
     Ok((b, pos + 1))
 }
+
+fn lex_plus(input: &[u8], start: usize) -> Result<(Token, usize), LexError> {
+    // 以下のようにResult::mapで簡潔に書ける
+    consume_byte(input, start, b'+').map(|(_, end)|
+        (Token::plus(Loc(start, end)), end)
+    )
+}
+
+fn lex_minus(input: &[u8], start: usize) -> Result<(Token, usize), LexError> {
+    consume_byte(input, start, b'-').map(|(_, end)|
+        (Token::minus(Loc(start, end)), end)
+    )
+}
+
+fn lex_asterisk(input: &[u8], start: usize) -> Result<(Token, usize), LexError> {
+    consume_byte(input, start, b'*').map(|(_, end)|
+        (Token::asterisk(Loc(start, end)), end)
+    )
+}
