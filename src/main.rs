@@ -164,3 +164,7 @@ fn lex_asterisk(input: &[u8], start: usize) -> Result<(Token, usize), LexError> 
         (Token::asterisk(Loc(start, end)), end)
     )
 }
+
+fn main() {
+    unimplemented!()
+}
