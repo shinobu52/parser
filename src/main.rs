@@ -94,11 +94,16 @@ impl LexError {
     }
 }
 
+/// 字句解析器
 fn lex(input: &str) -> Result<Vec<Token>, LexError> {
+    // 解析結果を保存するベクタ
     let mut tokens = Vec::new();
+    // 入力
     let input = input.as_bytes();
+    // 位置情報
     let mut pos = 0;
 
+    // サブレキサを読んだ後posを更新するマクロ
     macro_rules! lex_a_token {
         ($lexer:expr) => {{
             let (tok, p) = $lexer?;
