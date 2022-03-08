@@ -114,7 +114,7 @@ fn lex(input: &str) -> Result<Vec<Token>, LexError> {
 
     while pos < input.len() {
         match input[pos] {
-            b'0'...b'9' => lex_a_token!(lex_number(input, pos)),
+            b'0'..=b'9' => lex_a_token!(lex_number(input, pos)),
             b'+' => lex_a_token!(lex_plus(input, pos)),
             b'-' => lex_a_token!(lex_minus(input, pos)),
             b'*' => lex_a_token!(lex_asterisk(input, pos)),
@@ -163,6 +163,51 @@ fn lex_asterisk(input: &[u8], start: usize) -> Result<(Token, usize), LexError> 
     consume_byte(input, start, b'*').map(|(_, end)|
         (Token::asterisk(Loc(start, end)), end)
     )
+}
+
+fn lex_slash(input: &[u8], start: usize) -> Result<(Token, usize), LexError> {
+    consume_byte(input, start, b'/').map(|(_, end)|
+        (Token::slash(Loc(start, end)), end)
+    )
+}
+
+fn lex_lparen(input: &[u8], start: usize) -> Result<(Token, usize), LexError> {
+    consume_byte(input, start, b'(').map(|(_, end)|
+        (Token::lparen(Loc(start, end)), end)
+    )
+}
+
+fn lex_rparen(input: &[u8], start: usize) -> Result<(Token, usize), LexError> {
+    consume_byte(input, start, b')').map(|(_, end)|
+        (Token::rparen(Loc(start, end)), end)
+    )
+}
+
+fn lex_number(input: &[u8], mut pos: usize) -> Result<(Token, usize), LexError> {
+    use std::str::from_utf8;
+
+    // 入力に数字が続く限り位置を進める
+    let start = pos;
+    let pos = recognize_many(input, pos, |b| b"1234567890".contains(&b));
+
+    // 数字の列を数値に変換
+    let n = from_utf8(&input[start..pos])
+        .unwrap() // start..posの範囲でfrom_utf8は常に成功するためunwrap
+        .parse()
+        .unwrap(); // 同じ理由
+    Ok((Token::number(n, Loc(start, pos)), pos))
+}
+
+fn skip_spaces(input: &[u8], mut pos: usize) -> Result<((), usize), LexError> {
+    let pos = recognize_many(input, pos, |b| b"\n\t".contains(&b));
+    Ok(((), pos))
+}
+
+fn recognize_many(input: &[u8], mut pos: usize, mut f: impl FnMut(u8) -> bool) -> usize {
+    while pos < input.len() && f(input[pos]) {
+        pos += 1;
+    }
+    pos
 }
 
 fn main() {
