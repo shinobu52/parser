@@ -1,3 +1,5 @@
+use std::io;
+
 /// 位置情報
 /// Loc(4, 6)なら入力文字の5~7文字目の区間を表す
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -121,7 +123,7 @@ fn lex(input: &str) -> Result<Vec<Token>, LexError> {
             b'/' => lex_a_token!(lex_slash(input, pos)),
             b'(' => lex_a_token!(lex_lparen(input, pos)),
             b')' => lex_a_token!(lex_rparen(input, pos)),
-            b'' | b'\n' | b'\t' => {
+            b' ' | b'\n' | b'\t' => {
                 let ((), p) = skip_spaces(input, pos)?;
                 pos = p;
             }
@@ -183,7 +185,7 @@ fn lex_rparen(input: &[u8], start: usize) -> Result<(Token, usize), LexError> {
     )
 }
 
-fn lex_number(input: &[u8], mut pos: usize) -> Result<(Token, usize), LexError> {
+fn lex_number(input: &[u8], pos: usize) -> Result<(Token, usize), LexError> {
     use std::str::from_utf8;
 
     // 入力に数字が続く限り位置を進める
@@ -198,8 +200,9 @@ fn lex_number(input: &[u8], mut pos: usize) -> Result<(Token, usize), LexError> 
     Ok((Token::number(n, Loc(start, pos)), pos))
 }
 
-fn skip_spaces(input: &[u8], mut pos: usize) -> Result<((), usize), LexError> {
-    let pos = recognize_many(input, pos, |b| b"\n\t".contains(&b));
+fn skip_spaces(input: &[u8], pos: usize) -> Result<((), usize), LexError> {
+    // 空白が含まれているか判定するのでbyte文字列には' '（スペース）を含める
+    let pos = recognize_many(input, pos, |b| b" \n\t".contains(&b));
     Ok(((), pos))
 }
 
@@ -210,6 +213,51 @@ fn recognize_many(input: &[u8], mut pos: usize, mut f: impl FnMut(u8) -> bool) -
     pos
 }
 
+/// プロンプトを表示してユーザの入力を促す
+fn prompt(s: &str) -> io::Result<()> {
+    use std::io::{stdout, Write};
+
+    let stdout = stdout();
+    let mut stdout = stdout.lock();
+    
+    stdout.write(s.as_bytes())?;
+    stdout.flush()
+}
+
 fn main() {
-    unimplemented!()
+    use std::io::{stdin, BufRead, BufReader};
+
+    let stdin = stdin();
+    let stdin = stdin.lock();
+    let stdin = BufReader::new(stdin);
+    let mut lines = stdin.lines();
+
+    loop {
+        prompt("> ").unwrap();
+        // ユーザの入力を取得する
+        if let Some(Ok(line)) = lines.next() {
+            // 字句解析を行う
+            let token = lex(&line);
+            println!("{:?}", token);
+        } else {
+            break;
+        }
+    }
+}
+
+#[test]
+fn test_lexer() {
+    assert_eq!(
+        lex("1 + 2 * 3 - -10"),
+        Ok(vec![
+            Token::number(1, Loc(0, 1)),
+            Token::plus(Loc(2, 3)),
+            Token::number(2, Loc(4, 5)),
+            Token::asterisk(Loc(6, 7)),
+            Token::number(3, Loc(8, 9)),
+            Token::minus(Loc(10, 11)),
+            Token::minus(Loc(12, 13)),
+            Token::number(10, Loc(13, 15)),
+        ])
+    )
 }
