@@ -312,6 +312,21 @@ impl BinOp {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+enum ParseError {
+    /// 予期しないトークン
+    UnexpectedToken(Token),
+    /// 式を期待していたのに式でないものがきた
+    NotExpression(Token),
+    /// 演算子を期待していたのに演算子でないものがきた
+    NotOperator(Token),
+    /// 括弧が閉じられていない
+    UnclosedOpenParen(Token),
+    /// 式の解析が終わったのにまだトークンが残っている
+    RedundantExpression(Token),
+    /// パース途中で入力が終わった
+    Eof,
+}
 
 fn main() {
     use std::io::{stdin, BufRead, BufReader};
