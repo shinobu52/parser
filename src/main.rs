@@ -224,6 +224,95 @@ fn prompt(s: &str) -> io::Result<()> {
     stdout.flush()
 }
 
+/// ASTを表すデータ型
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+enum AstKind {
+    /// 数値
+    Num(u64),
+    /// 単項演算
+    UniOp {op: UniOp, e: Box<Ast>},
+    /// 二項演算
+    BinOp {op: BinOp, l: Box<Ast>, r: Box<Ast>},
+}
+
+type Ast = Annot<AstKind>;
+
+impl Ast {
+    fn num(n: u64, loc: Loc) -> Self {
+        Self::new(AstKind::Num(n), loc)
+    }
+
+    fn uniop(op: UniOp, e: Ast, loc: Loc) -> Self {
+        Self::new(AstKind::UniOp {op, e: Box::new(e)}, loc)
+    }
+
+    fn binop(op: BinOp, l: Ast, r: Ast, loc: Loc) -> Self {
+        Self::new(
+            AstKind::BinOp {
+                op,
+                l: Box::new(l),
+                r: Box::new(r),
+            },
+            loc,
+        )
+    }
+}
+
+/// 単項演算子を表すデータ型
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+enum UniOpKind {
+    /// 正号
+    Plus,
+    /// 負号
+    Minus,
+}
+
+type UniOp = Annot<UniOpKind>;
+
+impl UniOp {
+    fn plus(loc: Loc) -> Self {
+        Self::new(UniOpKind::Plus, loc)
+    }
+
+    fn minus(loc: Loc) -> Self {
+        Self::new(UniOpKind::Minus, loc)
+    }
+}
+
+/// 二項演算子を表すデータ型
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+enum BinOpKind {
+    /// 加算 
+    Add,
+    /// 減算
+    Sub,
+    /// 乗算
+    Mult,
+    /// 除算
+    Div,
+}
+
+type BinOp = Annot<BinOpKind>;
+
+impl BinOp {
+    fn add(loc: Loc) -> Self {
+        Self::new(BinOpKind::Add, loc)
+    }
+
+    fn sub(loc: Loc) -> Self {
+        Self::new(BinOpKind::Sub, loc)
+    }
+
+    fn mult(loc: Loc) -> Self {
+        Self::new(BinOpKind::Mult, loc)
+    }
+
+    fn div(loc: Loc) -> Self {
+        Self::new(BinOpKind::Div, loc)
+    }
+}
+
+
 fn main() {
     use std::io::{stdin, BufRead, BufReader};
 
