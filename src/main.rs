@@ -1,4 +1,4 @@
-use std::io;
+use std::{io, fmt::Result, iter::Peekable};
 
 /// 位置情報
 /// Loc(4, 6)なら入力文字の5~7文字目の区間を表す
@@ -326,6 +326,26 @@ enum ParseError {
     RedundantExpression(Token),
     /// パース途中で入力が終わった
     Eof,
+}
+
+fn parse(tokens: Vec<Token>) -> Result<Ast, ParseError> {
+    // 入力をイテレータにし、Peekableにする
+    let mut tokens = tokens.into_iter().peekable();
+
+    // その後、parse_exprを呼んでエラー処理をする
+    let ret = parse_expr(&mut tokens)?;
+    match tokens.next() {
+        Some(tok) => Err(ParseError::RedundantExpression(tok)),
+        None => Ok(ret),
+    }
+}
+
+fn parse_expr<Tokens>(tokens: &mut Peekable<Token>) -> Result<Ast, ParseError> 
+where
+    Tokens: Iterator<Item = Token>,
+{
+    // parse_exprはparse_expr3を呼ぶ
+    parse_expr3(tokens)
 }
 
 fn main() {
