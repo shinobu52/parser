@@ -1,7 +1,7 @@
 use crate::utils::{Annot, Loc};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-enum TokenKind {
+pub enum TokenKind {
     // 数字
     Number(u64),
     // +

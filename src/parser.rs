@@ -1,7 +1,7 @@
 use std::iter::Peekable;
 
 use crate::utils::{Annot, Loc};
-use crate::lexer::Token;
+use crate::lexer::{Token, TokenKind};
 
 /// ASTを表すデータ型
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -119,10 +119,80 @@ fn parse(tokens: Vec<Token>) -> Result<Ast, ParseError> {
     }
 }
 
-fn parse_expr<Tokens>(tokens: &mut Peekable<Token>) -> Result<Ast, ParseError> 
+fn parse_expr<Tokens>(tokens: &mut Peekable<Tokens>) -> Result<Ast, ParseError> 
 where
     Tokens: Iterator<Item = Token>,
 {
     // parse_exprはparse_expr3を呼ぶ
     parse_expr3(tokens)
+}
+
+fn parse_expr3<Tokens>(tokens: &mut Peekable<Tokens>) -> Result<Ast, ParseError>
+where
+    Tokens: Iterator<Item = Token>,
+{
+    fn parse_expr3_op<Tokens>(tokens: &mut Peekable<Tokens>) -> Result<BinOp, ParseError>
+    where
+        Tokens: Iterator<Item = Token>,
+    {
+        let op = tokens.peek()
+            .ok_or(ParseError::Eof)
+            .and_then(|tok| match tok.value {
+                TokenKind::Plus => Ok(BinOp::add(tok.loc.clone())),
+                TokenKind::Minus => Ok(BinOp::sub(tok.loc.clone())),
+                _ => Err(ParseError::NotOperator(tok.clone())),
+            })?;
+        tokens.next();
+        Ok(op)
+    }
+
+    parse_left_binop(tokens, parse_expr2, parse_expr3_op)
+}
+
+fn parse_expr2<Tokens>(tokens: &mut Peekable<Tokens>) -> Result<Ast, ParseError>
+where
+    Tokens: Iterator<Item = Token>,
+{
+    fn parse_expr2_op<Tokens>(tokens: &mut Peekable<Tokens>)
+    where
+        Tokens: Iterator<Item = Token>,
+    {
+        let op = tokens.peek()
+            .ok_or(ParseError::Eof)
+            .and_then(|tok| match tok.value {
+                TokenKind::Asterisk => Ok(BinOp::mult(tok.loc.clone())),
+                TokenKind::Minus => Ok(BinOp::div(tok.loc.clone())),
+                _ => Err(ParseError::NotOperator(tok.clone())),
+            })?;
+        tokens.next();
+        Ok(op)
+    }
+
+    parse_left_binop(tokens, parse_expr1, parse_expr2_op)
+}
+
+fn parse_left_binop<Tokens>(
+    tokens: &mut Peekable<Tokens>,
+    subexpr_parser: fn(&mut Peekable<Tokens>) -> Result<Ast, ParseError>,
+    op_parser: fn(&mut Peekable<Tokens>) -> Result<BinOp, ParseError>,
+) -> Result<Ast, ParseError>
+where
+    Tokens: Iterator<Item = Token>,
+{
+    let mut e = subexpr_parser(tokens)?;
+    loop {
+        match tokens.peek() {
+            Some(_) => {
+                let op = match op_parser(tokens) {
+                    Ok(op) => op,
+                    Err(_) => break,
+                };
+                let r = subexpr_parser(tokens)?;
+                let loc = e.loc.merge(&r.loc);
+                e = Ast::binop(op, e, r, loc)
+            },
+            _ => break,
+        }
+    }
+    Ok(e)
 }
