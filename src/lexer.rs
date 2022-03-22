@@ -23,49 +23,49 @@ pub type Token = Annot<TokenKind>;
 
 // ヘルパーメソッドを定義
 impl Token {
-    fn number(n: u64, loc: Loc) -> Self {
+    pub fn number(n: u64, loc: Loc) -> Self {
         Self::new(TokenKind::Number(n), loc)
     }
 
-    fn plus(loc: Loc) -> Self {
+    pub fn plus(loc: Loc) -> Self {
         Self::new(TokenKind::Plus, loc)
     }
 
-    fn minus(loc: Loc) -> Self {
+    pub fn minus(loc: Loc) -> Self {
         Self::new(TokenKind::Minus, loc)
     }
 
-    fn asterisk(loc: Loc) -> Self {
+    pub fn asterisk(loc: Loc) -> Self {
         Self::new(TokenKind::Asterisk, loc)
     }
 
-    fn slash(loc: Loc) -> Self {
+    pub fn slash(loc: Loc) -> Self {
         Self::new(TokenKind::Slash, loc)
     }
 
-    fn lparen(loc: Loc) -> Self {
+    pub fn lparen(loc: Loc) -> Self {
         Self::new(TokenKind::LParen, loc)
     }
 
-    fn rparen(loc: Loc) -> Self {
+    pub fn rparen(loc: Loc) -> Self {
         Self::new(TokenKind::RParen, loc)
     }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-enum LexErrorKind {
+pub enum LexErrorKind {
     InvalidChar(char),
     Eof,
 }
 
-type LexError = Annot<LexErrorKind>;
+pub type LexError = Annot<LexErrorKind>;
 
 impl LexError {
-    fn invalid_char(c: char, loc: Loc) -> Self {
+    pub fn invalid_char(c: char, loc: Loc) -> Self {
         Self::new(LexErrorKind::InvalidChar(c), loc)
     }
 
-    fn eof(loc: Loc) -> Self {
+    pub fn eof(loc: Loc) -> Self {
         Self::new(LexErrorKind::Eof, loc)
     }
 }
