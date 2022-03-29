@@ -164,7 +164,7 @@ where
             .ok_or(ParseError::Eof)
             .and_then(|tok| match tok.value {
                 TokenKind::Asterisk => Ok(BinOp::mult(tok.loc.clone())),
-                TokenKind::Minus => Ok(BinOp::div(tok.loc.clone())),
+                TokenKind::Slash => Ok(BinOp::div(tok.loc.clone())),
                 _ => Err(ParseError::NotOperator(tok.clone())),
             })?;
         tokens.next();

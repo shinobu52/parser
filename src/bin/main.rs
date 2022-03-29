@@ -1,7 +1,6 @@
 use std::io;
 
-mod lexer;
-use crate::lexer::lex;
+use parser::lexer::lex;
 
 fn main() {
     use std::io::{stdin, BufRead, BufReader};
