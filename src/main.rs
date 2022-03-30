@@ -1,6 +1,7 @@
 use std::io;
 
 use parser::lexer::lex;
+use parser::parser::parse;
 
 fn main() {
     use std::io::{stdin, BufRead, BufReader};
@@ -15,8 +16,9 @@ fn main() {
         // ユーザの入力を取得する
         if let Some(Ok(line)) = lines.next() {
             // 字句解析を行う
-            let token = lex(&line);
-            println!("{:?}", token);
+            let tokens = lex(&line).unwrap();
+            let ast = parse(tokens).unwrap();
+            println!("{:?}", ast);
         } else {
             break;
         }
