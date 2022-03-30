@@ -3,4 +3,4 @@ mod utils;
 pub mod lexer;
 
 // // 構文解析関係
-mod parser;
+pub mod parser;
