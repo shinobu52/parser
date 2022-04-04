@@ -1,7 +1,8 @@
-use std::iter::Peekable;
+use std::{iter::Peekable, str::FromStr};
 
 use crate::utils::{Annot, Loc};
-use crate::lexer::{Token, TokenKind};
+use crate::lexer::{Token, TokenKind, lex};
+use crate::error::{Error, ParseError};
 
 /// ASTを表すデータ型
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -14,7 +15,7 @@ pub enum AstKind {
     BinOp {op: BinOp, l: Box<Ast>, r: Box<Ast>},
 }
 
-type Ast = Annot<AstKind>;
+pub type Ast = Annot<AstKind>;
 
 impl Ast {
     pub fn num(n: u64, loc: Loc) -> Self {
@@ -89,22 +90,6 @@ impl BinOp {
     fn div(loc: Loc) -> Self {
         Self::new(BinOpKind::Div, loc)
     }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum ParseError {
-    /// 予期しないトークン
-    UnexpectedToken(Token),
-    /// 式を期待していたのに式でないものがきた
-    NotExpression(Token),
-    /// 演算子を期待していたのに演算子でないものがきた
-    NotOperator(Token),
-    /// 括弧が閉じられていない
-    UnclosedOpenParen(Token),
-    /// 式の解析が終わったのにまだトークンが残っている
-    RedundantExpression(Token),
-    /// パース途中で入力が終わった
-    Eof,
 }
 
 pub fn parse(tokens: Vec<Token>) -> Result<Ast, ParseError> {
@@ -253,6 +238,16 @@ where
             }
             _ => Err(ParseError::NotExpression(tok)),
         })
+}
+
+impl FromStr for Ast {
+    type Err = Error;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        // 内部では字句解析、構文解析の順に実行
+        let tokens = lex(s)?;
+        let ast = parse(tokens)?;
+        Ok(ast)
+    }
 }
 
 #[test]

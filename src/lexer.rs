@@ -1,4 +1,7 @@
+use std::fmt;
+
 use crate::utils::{Annot, Loc};
+use crate::error::LexError;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TokenKind {
@@ -52,21 +55,18 @@ impl Token {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum LexErrorKind {
-    InvalidChar(char),
-    Eof,
-}
-
-pub type LexError = Annot<LexErrorKind>;
-
-impl LexError {
-    pub fn invalid_char(c: char, loc: Loc) -> Self {
-        Self::new(LexErrorKind::InvalidChar(c), loc)
-    }
-
-    pub fn eof(loc: Loc) -> Self {
-        Self::new(LexErrorKind::Eof, loc)
+impl fmt::Display for TokenKind {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use self::TokenKind::*;
+        match self {
+            Number(n) => n.fmt(f),
+            Plus => write!(f, "+"),
+            Minus => write!(f, "-"),
+            Asterisk => write!(f, "*"),
+            Slash => write!(f, "/"),
+            LParen => write!(f, "("),
+            RParen => write!(f, ")"),
+        }
     }
 }
 
