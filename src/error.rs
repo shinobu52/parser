@@ -79,19 +79,19 @@ pub enum Error {
 
 impl Error {
     /// 診断メッセージを表示する
-    fn show_diagnostic(&self, input: &str) {
+    pub fn show_diagnostic(&self, input: &str) {
         use self::Error::*;
         use self::ParseError as P;
 
         // エラー情報とその位置情報を取り出す。エラーの種類によって位置情報を調整する
-        let (e, loc) = match self {
-            Lexer(e) => (e, e.loc.close()),
+        let (e, loc): (&dyn StdError, Loc) = match self {
+            Lexer(e) => (e, e.loc.clone()),
             Parser(e) => {
                 let loc = match e {
                     P::UnexpectedToken(Token {loc, ..})
                     | P::NotExpression(Token {loc, ..})
                     | P::NotOperator(Token {loc, ..})
-                    | P::UnclosedOpenParen(Token {loc, ..}) => loc.close(),
+                    | P::UnclosedOpenParen(Token {loc, ..}) => loc.clone(),
                     // redundant expressionはトークン以降行末までが余りなのでlocの終了位置を調整する
                     P::RedundantExpression(Token {loc, ..}) => Loc(loc.0, input.len()),
                     // EoFはloc情報を持っていないのでその場で作る
@@ -144,7 +144,7 @@ fn print_annot(input: &str, loc: Loc) {
     eprintln!("{}{}", " ".repeat(loc.0), "^".repeat(loc.1 - loc.0));
 }
 
-fn show_trace<E: StdError>(e: E) {
+pub fn show_trace<E: StdError>(e: E) {
     // エラーがあった場合そのエラーとsourceを全部出力する
     eprintln!("{}", e);
     let mut source = e.source();

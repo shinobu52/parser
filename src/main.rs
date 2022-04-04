@@ -1,6 +1,6 @@
-use std::{io, error::Error};
+use std::io;
 
-use parser::parser::Ast;
+use parser::{parser::Ast, error::show_trace};
 
 fn main() {
     use std::io::{stdin, BufRead, BufReader};
