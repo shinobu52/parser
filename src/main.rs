@@ -1,9 +1,13 @@
 use std::io;
 
 use parser::{parser::Ast, error::show_trace};
+use parser::interpreter::Interpreter;
 
 fn main() {
     use std::io::{stdin, BufRead, BufReader};
+
+    // インタプリタを用意しておく
+    let mut interp = Interpreter::new();
 
     let stdin = stdin();
     let stdin = stdin.lock();
@@ -19,10 +23,20 @@ fn main() {
                 Err(e) => {
                     e.show_diagnostic(&line);
                     show_trace(e);
-                    continue;
-                }
+                    continue
+                },
             };
-            println!("{:?}", ast);
+            // インタプリタでevalする
+            let n = match interp.eval(&ast) {
+                Ok(n) => n,
+                Err(e) => {
+                    e.show_diagnostic(&line);
+                    show_trace(e);
+                    continue
+                },
+            };
+
+            println!("{:?}", n);
         } else {
             break;
         }
