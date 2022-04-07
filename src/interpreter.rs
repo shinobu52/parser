@@ -53,3 +53,35 @@ impl Interpreter {
         }
     }
 }
+
+#[test]
+fn test_interpreter() {
+    use crate::utils::Loc;
+    
+    // 1 + 2 * 3 - -10
+    let ast = Ast::binop(
+        BinOp::sub(Loc(10, 11)),
+        Ast::binop(
+            BinOp::add(Loc(2, 3)),
+            Ast::num(1, Loc(0, 1)),
+            Ast::binop(
+                BinOp::new(BinOpKind::Mult, Loc(6, 7)),
+                Ast::num(2, Loc(4, 5)),
+                Ast::num(3, Loc(8, 9)),
+                Loc(4, 9)
+            ),
+            Loc(0, 9),
+        ),
+        Ast::uniop(
+            UniOp::minus(Loc(12, 13)),
+            Ast::num(10, Loc(13, 15)),
+            Loc(12, 15)
+        ),
+        Loc(0, 15)
+    );
+    let mut interp = Interpreter::new();
+
+    let ans = interp.eval(&ast).unwrap();
+
+    assert_eq!(ans, 17)
+}
