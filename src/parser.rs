@@ -22,11 +22,11 @@ impl Ast {
         Self::new(AstKind::Num(n), loc)
     }
 
-    fn uniop(op: UniOp, e: Ast, loc: Loc) -> Self {
+    pub fn uniop(op: UniOp, e: Ast, loc: Loc) -> Self {
         Self::new(AstKind::UniOp {op, e: Box::new(e)}, loc)
     }
 
-    fn binop(op: BinOp, l: Ast, r: Ast, loc: Loc) -> Self {
+    pub fn binop(op: BinOp, l: Ast, r: Ast, loc: Loc) -> Self {
         Self::new(
             AstKind::BinOp {
                 op,
@@ -50,11 +50,11 @@ pub enum UniOpKind {
 pub type UniOp = Annot<UniOpKind>;
 
 impl UniOp {
-    fn plus(loc: Loc) -> Self {
+    pub fn plus(loc: Loc) -> Self {
         Self::new(UniOpKind::Plus, loc)
     }
 
-    fn minus(loc: Loc) -> Self {
+    pub fn minus(loc: Loc) -> Self {
         Self::new(UniOpKind::Minus, loc)
     }
 }
@@ -75,19 +75,19 @@ pub enum BinOpKind {
 pub type BinOp = Annot<BinOpKind>;
 
 impl BinOp {
-    fn add(loc: Loc) -> Self {
+    pub fn add(loc: Loc) -> Self {
         Self::new(BinOpKind::Add, loc)
     }
 
-    fn sub(loc: Loc) -> Self {
+    pub fn sub(loc: Loc) -> Self {
         Self::new(BinOpKind::Sub, loc)
     }
 
-    fn mult(loc: Loc) -> Self {
+    pub fn mult(loc: Loc) -> Self {
         Self::new(BinOpKind::Mult, loc)
     }
 
-    fn div(loc: Loc) -> Self {
+    pub fn div(loc: Loc) -> Self {
         Self::new(BinOpKind::Div, loc)
     }
 }
