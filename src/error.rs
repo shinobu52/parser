@@ -70,11 +70,47 @@ impl fmt::Display for ParseError {
 
 impl StdError for ParseError {}
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum InterpreterErrorKind {
+    DivisionByZero,
+}
+
+pub type InterpreterError = Annot<InterpreterErrorKind>;
+
+impl InterpreterError {
+    pub fn show_diagnostic(&self, input: &str) {
+        // エラー情報を簡単に表示し
+        eprintln!("{}", self);
+        // エラー位置を指示する
+        print_annot(input, self.loc.clone())
+    }
+}
+
+impl fmt::Display for InterpreterError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use self::InterpreterErrorKind::*;
+
+        match self.value {
+            DivisionByZero => write!(f, "division by zero"),
+        }
+    }
+}
+
+impl StdError for InterpreterError {
+    fn description(&self) -> &str {
+        use self::InterpreterErrorKind::*;
+
+        match self.value {
+            DivisionByZero => "the right hand expression of the division evaluates to zero",
+        }
+    }
+}
+
 /// 字句解析エラーと構文解析エラーを統合するエラー型
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Error {
     Lexer(LexError),
-    Parser(ParseError)
+    Parser(ParseError),
 }
 
 impl Error {

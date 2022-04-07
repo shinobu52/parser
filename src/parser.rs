@@ -72,7 +72,7 @@ pub enum BinOpKind {
     Div,
 }
 
-type BinOp = Annot<BinOpKind>;
+pub type BinOp = Annot<BinOpKind>;
 
 impl BinOp {
     fn add(loc: Loc) -> Self {
